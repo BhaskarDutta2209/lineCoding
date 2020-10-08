@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Line2D;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -118,7 +117,8 @@ public class LineCoding extends JFrame implements ActionListener {
 				}
 			}
 
-		} else if(techniques.getSelectedItem().equals("NRZ-L")) {
+		}
+		else if(techniques.getSelectedItem().equals("NRZ-L")) {
 
 			//drawing the first bit
 			if(inputString.charAt(0) == '0') {
@@ -142,6 +142,17 @@ public class LineCoding extends JFrame implements ActionListener {
 			}
 
 		}
+		else if(techniques.getSelectedItem().equals("RZ")) {
+
+			for(int i=0; i<inputLength; i++) {
+				char presentBit = inputString.charAt(i);
+				if(presentBit == '0')
+					lastPoint = draw0ofRZ(lastPoint.x, lastPoint.y);
+				else if(presentBit == '1')
+					lastPoint = draw1ofRZ(lastPoint.x, lastPoint.y);
+			}
+
+		}
 
 	}
 
@@ -158,11 +169,11 @@ public class LineCoding extends JFrame implements ActionListener {
 
 	private Point drawVerticalBar(int startingPointX, int startingPointY, int direction) {
 		if(direction == 0) {
-			//direction 0 means -ve to +ve
+			//direction 0 means +ve to -ve
 			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY+vertical);
 			return new Point(startingPointX,startingPointY+vertical);
 		} else if(direction == 1) {
-			//direction 1 means +ve to -ve
+			//direction 1 means -ve to +ve
 			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY-vertical);
 			return new Point(startingPointX,startingPointY-vertical);
 		}
@@ -173,12 +184,12 @@ public class LineCoding extends JFrame implements ActionListener {
 
 	private Point draw1ofNRZ_I(int startingPointX, int startingPointY, int direction) {
 		if(direction == 0) {
-			//direction 0 means transition from -ve to +ve
+			//direction 0 means transition from +ve to -ve
 			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY+vertical);
 			drawPanel.getGraphics().drawLine(startingPointX,startingPointY+vertical,startingPointX+horizontal,startingPointY+vertical);
 			return new Point(startingPointX+horizontal,startingPointY+vertical);
 		} else if(direction == 1) {
-			//direction 1 means transition from +ve to -ve
+			//direction 1 means transition from -ve to +ve
 			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY-vertical);
 			drawPanel.getGraphics().drawLine(startingPointX,startingPointY-vertical,startingPointX+horizontal,startingPointY-vertical);
 			return new Point(startingPointX+horizontal,startingPointY-vertical);
@@ -188,6 +199,24 @@ public class LineCoding extends JFrame implements ActionListener {
 
 	private Point draw0ofNRZ_I(int startingPointX, int startingPointY) {
 		drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX+horizontal,startingPointY);
+		return new Point(startingPointX+horizontal,startingPointY);
+	}
+
+	//The below methods are used to draw 0 and 1 for RZ encoding technique
+
+	private Point draw1ofRZ(int startingPointX, int startingPointY) {
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY-(vertical/2));
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY-(vertical/2),startingPointX+(horizontal/2),startingPointY-(vertical/2));
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY-(vertical/2),startingPointX+(horizontal/2),startingPointY);
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+(horizontal),startingPointY);
+		return new Point(startingPointX+horizontal,startingPointY);
+	}
+
+	private Point draw0ofRZ(int startingPointX, int startingPointY) {
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY+(vertical/2));
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY+(vertical/2),startingPointX+(horizontal/2),startingPointY+(vertical/2));
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY+(vertical/2),startingPointX+(horizontal/2),startingPointY);
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+(horizontal),startingPointY);
 		return new Point(startingPointX+horizontal,startingPointY);
 	}
 
