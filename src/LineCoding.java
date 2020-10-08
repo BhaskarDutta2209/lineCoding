@@ -81,6 +81,7 @@ public class LineCoding extends JFrame implements ActionListener {
 
 		String inputString = inpData.getText();
 		int inputLength = inputString.length();
+		Point lastPoint = origin;
 
 		if(techniques.getSelectedItem().equals("NRZ-I")) {
 //			char[] chars = {'4','q','*'};
@@ -97,7 +98,6 @@ public class LineCoding extends JFrame implements ActionListener {
 //			lastPoint = draw1ofNRZ_I(lastPoint.x,lastPoint.y,0);
 //			draw0ofNRZ_I(lastPoint.x,lastPoint.y);
 
-			Point lastPoint = origin;
 			int direction = 1;
 
 			//drawing the first bit
@@ -118,12 +118,55 @@ public class LineCoding extends JFrame implements ActionListener {
 				}
 			}
 
+		} else if(techniques.getSelectedItem().equals("NRZ-L")) {
+
+			//drawing the first bit
+			if(inputString.charAt(0) == '0') {
+				lastPoint = drawHorizontalBar(origin.x,origin.y - (vertical/2));
+			} else if(inputString.charAt(1) == '1') {
+				lastPoint = drawHorizontalBar(origin.x,origin.y + (vertical/2));
+			}
+
+			for(int i=1; i<inputLength; i++) {
+				char presentChar = inputString.charAt(i);
+				char prevChar = inputString.charAt(i-1);
+				if((presentChar == '0' && prevChar=='0') || (presentChar == '1' && prevChar == '1'))
+					lastPoint = drawHorizontalBar(lastPoint.x,lastPoint.y);
+				else if(presentChar == '1' && prevChar == '0') {
+					lastPoint = drawVerticalBar(lastPoint.x, lastPoint.y, 1);
+					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
+				} else if(presentChar == '0' && prevChar == '1') {
+					lastPoint = drawVerticalBar(lastPoint.x, lastPoint.y, 0);
+					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
+				}
+			}
+
 		}
 
 	}
 
 	private void decode() {
 		drawPanel.getGraphics().drawString("Implement "+techniques.getSelectedItem()+" Decoding Technique!", 400, 100);
+	}
+
+	//The below methods are used to draw horizontal and vertical lines
+
+	private Point drawHorizontalBar(int startingPointX, int startingPointY) {
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX+horizontal,startingPointY);
+		return new Point(startingPointX+horizontal,startingPointY);
+	}
+
+	private Point drawVerticalBar(int startingPointX, int startingPointY, int direction) {
+		if(direction == 0) {
+			//direction 0 means -ve to +ve
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY+vertical);
+			return new Point(startingPointX,startingPointY+vertical);
+		} else if(direction == 1) {
+			//direction 1 means +ve to -ve
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY-vertical);
+			return new Point(startingPointX,startingPointY-vertical);
+		}
+		return null;
 	}
 
 	//The below methods are used to draw lines for NRZ-I encoding technique
