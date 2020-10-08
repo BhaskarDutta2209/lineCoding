@@ -209,6 +209,22 @@ public class LineCoding extends JFrame implements ActionListener {
 				}
 			}
 		}
+		else if(techniques.getSelectedItem().equals("Pseudoternary")) {
+			//this is same as AMI with only change of, for 0 voltage alternates.
+			//the draw1ofAMI is used here for 0
+
+			int direction = 1;
+
+			for(int i=0; i<inputLength; i++) {
+				char presentBit = inputString.charAt(i);
+				if(presentBit == '0') {
+					lastPoint = draw1ofAMI(lastPoint.x, lastPoint.y, direction);
+					direction = (direction+1)%2;
+				} else {
+					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
+				}
+			}
+		}
 
 	}
 
