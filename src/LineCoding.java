@@ -153,6 +153,50 @@ public class LineCoding extends JFrame implements ActionListener {
 			}
 
 		}
+		else if(techniques.getSelectedItem().equals("Manchester")) {
+
+			//drawing the first bit
+			if(inputString.charAt(0) == '0') {
+				lastPoint = draw0ofManchester(origin.x,origin.y+(vertical/2));
+			} else if(inputString.charAt(0) == '1') {
+				lastPoint = draw1ofManchester(origin.x,origin.y-(vertical/2));
+			}
+
+			for(int i=1; i<inputLength; i++) {
+				char presentBit = inputString.charAt(i);
+				if(presentBit == '0')
+					lastPoint = draw0ofManchester(lastPoint.x, lastPoint.y);
+				else if(presentBit == '1')
+					lastPoint = draw1ofManchester(lastPoint.x, lastPoint.y);
+				else if(presentBit == 'A')
+					drawPanel.getGraphics().drawLine(lastPoint.x, lastPoint.y, lastPoint.x, 500);
+			}
+
+		}
+		else if(techniques.getSelectedItem().equals("Differential Manchester")) {
+
+			//drawing the first bit
+			if(inputString.charAt(0) == '0') {
+				drawPanel.getGraphics().drawLine(origin.x,origin.y+(vertical/2),origin.x+(horizontal/2),origin.y+(vertical/2));
+				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y+(vertical/2),origin.x+(horizontal/2),origin.y-(vertical/2));
+				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y-(vertical/2),origin.x+horizontal,origin.y-(vertical/2));
+				lastPoint = new Point(origin.x+horizontal,origin.y-(vertical/2));
+			} else {
+				drawPanel.getGraphics().drawLine(origin.x,origin.y-(vertical/2),origin.x+(horizontal/2),origin.y-(vertical/2));
+				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y-(vertical/2),origin.x+(horizontal/2),origin.y+(vertical/2));
+				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y+(vertical/2),origin.x+horizontal,origin.y+(vertical/2));
+				lastPoint = new Point(origin.x+horizontal,origin.y+(vertical/2));
+			}
+
+			for(int i=1; i<inputLength; i++) {
+				char presentBit = inputString.charAt(i);
+				if(presentBit == '0')
+					lastPoint = draw0ofDifferentialManchester(lastPoint.x, lastPoint.y);
+				else
+					lastPoint = draw1ofDifferentialManchester(lastPoint.x, lastPoint.y);
+			}
+
+		}
 
 	}
 
@@ -218,6 +262,73 @@ public class LineCoding extends JFrame implements ActionListener {
 		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY+(vertical/2),startingPointX+(horizontal/2),startingPointY);
 		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+(horizontal),startingPointY);
 		return new Point(startingPointX+horizontal,startingPointY);
+	}
+
+	//The below methods are used to draw 0 and 1 for Manchester encoding technique
+
+	private Point draw0ofManchester(int startingPointX, int startingPointY) {
+		if(startingPointY < origin.y) {
+			//this means the previous end point was in +ve side i.e. this will be out of phase
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY+vertical);
+			//setting the new starting point y coordinate
+			startingPointY = startingPointY+vertical;
+		}
+
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX+(horizontal/2),startingPointY);
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+(horizontal/2),startingPointY-vertical);
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY-vertical,startingPointX+horizontal,startingPointY-vertical);
+
+		return new Point(startingPointX+horizontal,startingPointY-vertical);
+	}
+
+	private Point draw1ofManchester(int startingPointX, int startingPointY) {
+		if(startingPointY > origin.y) {
+			//this means the previous end point was in -ve side i.e. this will be out of phase
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY-vertical);
+			//setting the new starting point y coordinate
+			startingPointY = startingPointY-vertical;
+		}
+
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX+(horizontal/2),startingPointY);
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+(horizontal/2),startingPointY+vertical);
+		drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY+vertical,startingPointX+horizontal,startingPointY+vertical);
+
+		return new Point(startingPointX+horizontal,startingPointY+vertical);
+	}
+
+	//The below methods are used to draw 0 and 1 for Differential Manchester Encoding
+
+	private Point draw1ofDifferentialManchester(int startingPointX, int startingPointY) {
+		drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX+(horizontal/2),startingPointY);
+		if(startingPointY < origin.y) {
+			//this means in +ve side
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+(horizontal/2),startingPointY+vertical);
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY+vertical,startingPointX+horizontal,startingPointY+vertical);
+			return new Point(startingPointX+horizontal,startingPointY+vertical);
+		} else {
+			//this means in -ve side
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+(horizontal/2),startingPointY-vertical);
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY-vertical,startingPointX+horizontal,startingPointY-vertical);
+			return new Point(startingPointX+horizontal,startingPointY-vertical);
+		}
+	}
+
+	private Point draw0ofDifferentialManchester(int startingPointX, int startingPointY) {
+		if(startingPointY < origin.y) {
+			//this means in +ve side
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY+vertical);
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY+vertical,startingPointX+(horizontal/2),startingPointY+vertical);
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY+vertical,startingPointX+(horizontal/2),startingPointY);
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+horizontal,startingPointY);
+			return new Point(startingPointX+horizontal,startingPointY);
+		} else {
+			//this means in -ve side
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY-vertical);
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY-vertical,startingPointX+(horizontal/2),startingPointY-vertical);
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY-vertical,startingPointX+(horizontal/2),startingPointY);
+			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+horizontal,startingPointY);
+			return new Point(startingPointX+horizontal,startingPointY);
+		}
 	}
 
 }
