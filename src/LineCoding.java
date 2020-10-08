@@ -197,6 +197,18 @@ public class LineCoding extends JFrame implements ActionListener {
 			}
 
 		}
+		else if(techniques.getSelectedItem().equals("AMI")) {
+			int direction = 1;
+			for(int i=0; i<inputLength; i++) {
+				char presentBit = inputString.charAt(i);
+				if(presentBit == '0')
+					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
+				else if(presentBit == '1') {
+					lastPoint = draw1ofAMI(lastPoint.x, lastPoint.y, direction);
+					direction = (direction + 1)%2;
+				}
+			}
+		}
 
 	}
 
@@ -329,6 +341,25 @@ public class LineCoding extends JFrame implements ActionListener {
 			drawPanel.getGraphics().drawLine(startingPointX+(horizontal/2),startingPointY,startingPointX+horizontal,startingPointY);
 			return new Point(startingPointX+horizontal,startingPointY);
 		}
+	}
+
+	//The below methods is used to draw 1 in AMI encoding technique
+
+	private Point draw1ofAMI(int startingPointX, int startingPointY, int direction) {
+		if(direction == 1) {
+			//this means 1 is in the +ve side
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY-vertical);
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY-vertical,startingPointX+horizontal,startingPointY-vertical);
+			drawPanel.getGraphics().drawLine(startingPointX+horizontal,startingPointY-vertical,startingPointX+horizontal,startingPointY);
+			return new Point(startingPointX+horizontal,startingPointY);
+		} else if(direction == 0) {
+			//this means 1 is in the -ve side
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY,startingPointX,startingPointY+vertical);
+			drawPanel.getGraphics().drawLine(startingPointX,startingPointY+vertical,startingPointX+horizontal,startingPointY+vertical);
+			drawPanel.getGraphics().drawLine(startingPointX+horizontal,startingPointY+vertical,startingPointX+horizontal,startingPointY);
+			return new Point(startingPointX+horizontal,startingPointY);
+		}
+		return null;
 	}
 
 }
