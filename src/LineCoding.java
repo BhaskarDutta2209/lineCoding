@@ -283,7 +283,13 @@ public class LineCoding extends JFrame implements ActionListener {
 	}
 
 	private void decode() {
-		drawPanel.getGraphics().drawString("Implement "+techniques.getSelectedItem()+" Decoding Technique!", 400, 100);
+//		drawPanel.getGraphics().drawString("Implement "+techniques.getSelectedItem()+" Decoding Technique!", 400, 100);
+
+		if(techniques.getSelectedItem().equals("NRZ-I"))
+			rcvData.setText(decodeNRZ_I(baudList));
+		else if(techniques.getSelectedItem().equals("NRZ-L"))
+			rcvData.setText(decodeNRZ_L(baudList));
+
 	}
 
 	//The below methods are used to draw horizontal and vertical lines
@@ -431,5 +437,46 @@ public class LineCoding extends JFrame implements ActionListener {
 		}
 		return null;
 	}
+
+	//The below function is used to decode NRZ-I baud array
+	private String decodeNRZ_I(List<Integer> receivedBaudList) {
+		String result = "";
+		int lengthOfList = receivedBaudList.size();
+		int previousBaud = 0;
+
+		if(receivedBaudList.get(0) == -5) {
+			result = result+"0";
+			previousBaud = -5;
+		} else if(receivedBaudList.get(0) == 5) {
+			result = result+"1";
+			previousBaud = 5;
+		}
+		for(int i=1; i<lengthOfList; i++) {
+			if(receivedBaudList.get(i).equals(previousBaud)) {
+				result = result + "0";
+				previousBaud = receivedBaudList.get(i);
+			}
+			else {
+				result = result + "1";
+				previousBaud = receivedBaudList.get(i);
+			}
+		}
+
+		return result;
+	}
+
+	//The below function is used to decode NRZ-L baud array
+	private String decodeNRZ_L(List<Integer> receivedBaudList) {
+		String result = "";
+		for(int i : receivedBaudList) {
+			if(i == -5)
+				result = result + "0";
+			else if(i == 5)
+				result = result + "1";
+		}
+		return result;
+	}
+
+	//The 
 
 }
