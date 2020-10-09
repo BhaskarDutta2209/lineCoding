@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -23,6 +25,10 @@ public class LineCoding extends JFrame implements ActionListener {
 
 	//the origin of the amp vs time graph
 	Point origin = new Point(50,100);
+
+	//defining a list for bauds and a default baud for the first bit
+	List<Integer> baudList = new ArrayList<Integer>();
+	int baud = 0;
 
 	public LineCoding() {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -69,6 +75,11 @@ public class LineCoding extends JFrame implements ActionListener {
 			decode();
 		}else if(e.getActionCommand().equals("Clear")){
 			repaint();
+			horizontal = 10;
+			vertical = 40;
+			origin = new Point(50,100);
+			baud = 0;
+			baudList.clear();
 		}
 		
 	}
@@ -83,26 +94,17 @@ public class LineCoding extends JFrame implements ActionListener {
 		Point lastPoint = origin;
 
 		if(techniques.getSelectedItem().equals("NRZ-I")) {
-//			char[] chars = {'4','q','*'};
-//
-//			drawPanel.getGraphics().drawLine(10,50,10,130);
-//			drawPanel.getGraphics().drawChars(chars,0,2,100,100);
-//			drawPanel.getGraphics().setColor(Color.BLUE);
-//			drawPanel.getGraphics().drawLine(100,50,100,130);
-//			System.out.println(inpData.getText());
-
-//			Point startingPoint = new Point(origin.x,origin.y-(vertical/2));
-
-//			Point lastPoint = draw1ofNRZ_I(50,150,1);
-//			lastPoint = draw1ofNRZ_I(lastPoint.x,lastPoint.y,0);
-//			draw0ofNRZ_I(lastPoint.x,lastPoint.y);
 
 			int direction = 1;
 
 			//drawing the first bit
 			if(inputString.charAt(0) == '0') {
+				baud = -5;
+				baudList.add(baud);
 				lastPoint = draw0ofNRZ_I(origin.x,origin.y - (vertical/2));
 			} else if(inputString.charAt(0) == '1') {
+				baud = +5;
+				baudList.add(baud);
 				lastPoint = draw1ofNRZ_I(origin.x,origin.y + (vertical/2),direction);
 				direction = (direction + 1)%2;
 			}
@@ -110,32 +112,46 @@ public class LineCoding extends JFrame implements ActionListener {
 			for(int i=1; i<inputLength; i++) {
 				char bit = inputString.charAt(i);
 				if(bit == '0') {
+					baudList.add(baud);
 					lastPoint = draw0ofNRZ_I(lastPoint.x,lastPoint.y);
 				} else if(bit == '1') {
+					baud = -1 * baud;
+					baudList.add(baud);
 					lastPoint = draw1ofNRZ_I(lastPoint.x, lastPoint.y, direction);
 					direction = (direction + 1)%2;
 				}
 			}
+
+			System.out.println(baudList);
 
 		}
 		else if(techniques.getSelectedItem().equals("NRZ-L")) {
 
 			//drawing the first bit
 			if(inputString.charAt(0) == '0') {
+				baudList.add(-5);
 				lastPoint = drawHorizontalBar(origin.x,origin.y - (vertical/2));
 			} else if(inputString.charAt(1) == '1') {
+				baudList.add(+5);
 				lastPoint = drawHorizontalBar(origin.x,origin.y + (vertical/2));
 			}
 
 			for(int i=1; i<inputLength; i++) {
 				char presentChar = inputString.charAt(i);
 				char prevChar = inputString.charAt(i-1);
-				if((presentChar == '0' && prevChar=='0') || (presentChar == '1' && prevChar == '1'))
-					lastPoint = drawHorizontalBar(lastPoint.x,lastPoint.y);
+				if((presentChar == '0' && prevChar=='0') || (presentChar == '1' && prevChar == '1')) {
+					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
+					if(presentChar == '0')
+						baudList.add(-5);
+					else if(presentChar == '1')
+						baudList.add(+5);
+				}
 				else if(presentChar == '1' && prevChar == '0') {
+					baudList.add(+5);
 					lastPoint = drawVerticalBar(lastPoint.x, lastPoint.y, 1);
 					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
 				} else if(presentChar == '0' && prevChar == '1') {
+					baudList.add(-5);
 					lastPoint = drawVerticalBar(lastPoint.x, lastPoint.y, 0);
 					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
 				}
@@ -146,10 +162,16 @@ public class LineCoding extends JFrame implements ActionListener {
 
 			for(int i=0; i<inputLength; i++) {
 				char presentBit = inputString.charAt(i);
-				if(presentBit == '0')
+				if(presentBit == '0') {
+					baudList.add(-5);
+					baudList.add(0);
 					lastPoint = draw0ofRZ(lastPoint.x, lastPoint.y);
-				else if(presentBit == '1')
+				}
+				else if(presentBit == '1') {
+					baudList.add(+5);
+					baudList.add(0);
 					lastPoint = draw1ofRZ(lastPoint.x, lastPoint.y);
+				}
 			}
 
 		}
@@ -157,19 +179,27 @@ public class LineCoding extends JFrame implements ActionListener {
 
 			//drawing the first bit
 			if(inputString.charAt(0) == '0') {
+				baudList.add(-5);
+				baudList.add(+5);
 				lastPoint = draw0ofManchester(origin.x,origin.y+(vertical/2));
 			} else if(inputString.charAt(0) == '1') {
+				baudList.add(+5);
+				baudList.add(-5);
 				lastPoint = draw1ofManchester(origin.x,origin.y-(vertical/2));
 			}
 
 			for(int i=1; i<inputLength; i++) {
 				char presentBit = inputString.charAt(i);
-				if(presentBit == '0')
+				if(presentBit == '0') {
+					baudList.add(-5);
+					baudList.add(+5);
 					lastPoint = draw0ofManchester(lastPoint.x, lastPoint.y);
-				else if(presentBit == '1')
+				}
+				else if(presentBit == '1') {
+					baudList.add(+5);
+					baudList.add(-5);
 					lastPoint = draw1ofManchester(lastPoint.x, lastPoint.y);
-				else if(presentBit == 'A')
-					drawPanel.getGraphics().drawLine(lastPoint.x, lastPoint.y, lastPoint.x, 500);
+				}
 			}
 
 		}
@@ -177,11 +207,17 @@ public class LineCoding extends JFrame implements ActionListener {
 
 			//drawing the first bit
 			if(inputString.charAt(0) == '0') {
+				baudList.add(-5);
+				baudList.add(+5);
+				baud = +5;
 				drawPanel.getGraphics().drawLine(origin.x,origin.y+(vertical/2),origin.x+(horizontal/2),origin.y+(vertical/2));
 				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y+(vertical/2),origin.x+(horizontal/2),origin.y-(vertical/2));
 				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y-(vertical/2),origin.x+horizontal,origin.y-(vertical/2));
 				lastPoint = new Point(origin.x+horizontal,origin.y-(vertical/2));
 			} else {
+				baudList.add(+5);
+				baudList.add(-5);
+				baud = -5;
 				drawPanel.getGraphics().drawLine(origin.x,origin.y-(vertical/2),origin.x+(horizontal/2),origin.y-(vertical/2));
 				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y-(vertical/2),origin.x+(horizontal/2),origin.y+(vertical/2));
 				drawPanel.getGraphics().drawLine(origin.x+(horizontal/2),origin.y+(vertical/2),origin.x+horizontal,origin.y+(vertical/2));
@@ -190,20 +226,34 @@ public class LineCoding extends JFrame implements ActionListener {
 
 			for(int i=1; i<inputLength; i++) {
 				char presentBit = inputString.charAt(i);
-				if(presentBit == '0')
+				if(presentBit == '0') {
+					baud = baud * -1;
+					baudList.add(baud);
+					baud = -1*baud;
+					baudList.add(baud);
 					lastPoint = draw0ofDifferentialManchester(lastPoint.x, lastPoint.y);
-				else
+				}
+				else {
+					baudList.add(baud);
+					baud = -1*baud;
+					baudList.add(baud);
 					lastPoint = draw1ofDifferentialManchester(lastPoint.x, lastPoint.y);
+				}
 			}
 
 		}
 		else if(techniques.getSelectedItem().equals("AMI")) {
 			int direction = 1;
+			baud = +5;
 			for(int i=0; i<inputLength; i++) {
 				char presentBit = inputString.charAt(i);
-				if(presentBit == '0')
+				if(presentBit == '0') {
+					baudList.add(0);
 					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
+				}
 				else if(presentBit == '1') {
+					baudList.add(baud);
+					baud = -1*baud;
 					lastPoint = draw1ofAMI(lastPoint.x, lastPoint.y, direction);
 					direction = (direction + 1)%2;
 				}
@@ -214,18 +264,22 @@ public class LineCoding extends JFrame implements ActionListener {
 			//the draw1ofAMI is used here for 0
 
 			int direction = 1;
+			baud = +5;
 
 			for(int i=0; i<inputLength; i++) {
 				char presentBit = inputString.charAt(i);
 				if(presentBit == '0') {
+					baudList.add(baud);
+					baud = -1*baud;
 					lastPoint = draw1ofAMI(lastPoint.x, lastPoint.y, direction);
 					direction = (direction+1)%2;
 				} else {
+					baudList.add(0);
 					lastPoint = drawHorizontalBar(lastPoint.x, lastPoint.y);
 				}
 			}
 		}
-
+		System.out.println(baudList);
 	}
 
 	private void decode() {
