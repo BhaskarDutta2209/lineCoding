@@ -2,7 +2,7 @@
 
 This project is used to display various types of line encoding.
 
-##How to run?
+## How to run?
 
 Clone the repo into desired location
 
