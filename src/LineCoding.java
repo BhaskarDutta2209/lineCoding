@@ -289,6 +289,16 @@ public class LineCoding extends JFrame implements ActionListener {
 			rcvData.setText(decodeNRZ_I(baudList));
 		else if(techniques.getSelectedItem().equals("NRZ-L"))
 			rcvData.setText(decodeNRZ_L(baudList));
+		else if(techniques.getSelectedItem().equals("RZ"))
+			rcvData.setText(decodeRZ(baudList));
+		else if(techniques.getSelectedItem().equals("Manchester"))
+			rcvData.setText(decodeManchester(baudList));
+		else if(techniques.getSelectedItem().equals("Differential Manchester"))
+			rcvData.setText(decodeDifferentialManchester(baudList));
+		else if(techniques.getSelectedItem().equals("AMI"))
+			rcvData.setText(decodeAMI(baudList));
+		else if(techniques.getSelectedItem().equals("Pseudoternary"))
+			rcvData.setText(decodePseudoternary(baudList));
 
 	}
 
@@ -477,6 +487,68 @@ public class LineCoding extends JFrame implements ActionListener {
 		return result;
 	}
 
-	//The 
+	//The below function is used to decode RZ baud array
+	private String decodeRZ(List<Integer> receivedBaudList) {
+		int receivedLength = receivedBaudList.size();
+		String result = "";
+		for(int i=0; i<receivedLength; i+=2) {
+			if(receivedBaudList.get(i) == -5)
+				result = result + "0";
+			else if(receivedBaudList.get(i) == 5)
+				result = result + "1";
+		}
+		return result;
+	}
+
+	//The below function is used to decode Manchester baud array
+	private String decodeManchester(List<Integer> receivedBaudList) {
+		int receivedLength = receivedBaudList.size();
+		String result = "";
+		for(int i=0; i<receivedLength; i+=2) {
+			if(receivedBaudList.get(i) == 5 && receivedBaudList.get(i+1) == -5)
+				result = result + "1";
+			else if(receivedBaudList.get(i) == -5 && receivedBaudList.get(i+1) == 5)
+				result = result + "0";
+		}
+		return result;
+	}
+
+	//The below function is used to decode Differential Manchester baud array
+	private String decodeDifferentialManchester(List<Integer> receivedBaudList) {
+		int receivedLength = receivedBaudList.size();
+		String result = "";
+		if(receivedBaudList.get(0) == -5)
+			result = result + "0";
+		else if(receivedBaudList.get(0) == +5)
+			result = result + "1";
+
+		for(int i=2; i<receivedLength; i+=2) {
+			if(receivedBaudList.get(i) == receivedBaudList.get(i-1))
+				result = result + "1";
+			else if(receivedBaudList.get(i) == (-1 * receivedBaudList.get(i-1)))
+				result = result + "0";
+		}
+
+		return result;
+	}
+
+	//The below function is used to decode AMI baud array
+	private String decodeAMI(List<Integer> receivedBaudList) {
+		String result = "";
+
+		for(int i : receivedBaudList)
+			result += (i == 0) ? "0" : "1";
+
+		return  result;
+	}
+
+	//The below function is used to decode Pseudoternary
+	private String decodePseudoternary(List<Integer> receivedBaudList) {
+		String result = "";
+		for(int i : receivedBaudList)
+			result += (i == 0) ? "1" : "0";
+
+		return result;
+	}
 
 }
